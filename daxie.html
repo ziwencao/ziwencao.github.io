@@ -1,161 +1,259 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>中英文金额大写转换器</title>
+    <style type="text/css">
+        #table {
+            width: 800px;
+            height: 500px;
+            margin: 10px;
+            border: 2px solid #000000;
+            box-shadow: 10px 10px 5px;
+            border-radius: 50px;
+        }
+
+        .buttonStyle {
+            height: 40px;
+            margin: 20px;
+            font-size: 20px;
+            background-color: #6495ED;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .oneStyle {
+            margin-left: 150px;
+            margin-top: 10px;
+            font-family: sans-serif;
+            font-size: 20px;
+        }
+
+        .oneStyle1 {
+            margin-left: 150px;
+            margin-top: 30px;
+            font-family: sans-serif;
+            font-size: 20px;
+        }
+
+        .InputText {
+            width: 150px;
+            height: 20px;
+            margin: 10px;
+        }
+
+        span {
+            border-radius: 50%;
+            color: #FFFFFF;
+            padding: 3px;
+            font-size: 13px;
+        }
+    </style>
 </head>
 
 <body>
-    <input id="txtInput" type="text">
-    <button onclick="fanyi()">翻译</button>
-    <span id="divOutput"></span>
-    <script>
-        function Id(v) { return document.getElementById(v) }
-        function funcMoney2Letters() {
-            var iNum = Math.round(parseFloat(Id("txtInput").value * 100)) / 100;//保留最后两位小数
-            if (!iNum) { Id("divOutput").innerHTML = "Error!"; return; }
-            var arrPlace = new Array('', ' Thousand ', ' Million ', ' Billion ', ' Trillion ', ' Quadrillion ', ' Quintillion ', ' Sextillion ', ' Septillion ', ' Octillion ', ' Nonillion ', ' Decillion ', ' Undecillion ', ' Duodecillion ');
-            var strNum = iNum + "";
-            Id("txtInput").value = strNum;
-            var strInt = strNum;//整数部分
-            var idxPoint = strNum.indexOf('.');
-            var Cents = "";
-            if (idxPoint > 0) {//小数部分
-                var strCents = strNum.substring(idxPoint + 1);
-                if (strCents.length == 1) strCents += "0";
-                Cents = funcConvertTens(strCents);
-                strInt = strInt.substring(0, idxPoint);//整数部分
-            }
-            var iCount = 0;
-            var Dollars = "";
-            while (strInt != "") {
-                var Temp = funcConvertHundreds(strInt.substring(strInt.length - 3));
-                if (Temp != "") Dollars = Temp + arrPlace[iCount] + Dollars;
-                if (Temp.length > 3) {
-                    strInt = strInt.substring(0, strInt.length - 3);
-                }
-                else {
-                    strInt = "";
-                }
-                iCount++;
-                if (iCount >= arrPlace.length) break;//数值太大无法处理
-            }
+    <div id="table">
+        <div>
+            <h1 style="text-align:center">中英文金额大写转换器</h1>
+        </div>
+        <div class="oneStyle">
+            选择币种：<select id="currency" class="InputText" title="币种">
+                <option value="">-----请选择-----</option>
+                <option value="CNY">人民币</option>
+                <option value="GBP">英镑</option>
+                <option value="HKD">港币</option>
+                <option value="USD">美元</option>
+                <option value="CHF">瑞士法郎</option>
+                <option value="SGD">新加坡元</option>
+                <option value="JPY">日元</option>
+                <option value="CAD">加拿大元</option>
+                <option value="AUD">澳大利亚元</option>
+                <option value="EUR">欧元</option>
+                <option value="NZD">新西兰元</option>
+            </select>
+        </div>
+        <div class="oneStyle">
+            输入金额：<input class="InputText" type="text" id="Amount" name="Amount" maxlength="11" title="金额"
+                onkeyup="(this.v=function(){this.value=this.value.replace(/[^0-9|^.]+/,'');}).call(this)"
+                onblur="this.v();">
+        </div>
+        <div class="oneStyle1">
+            中文大写：<div id="ChineseWords"></div>
+        </div>
+        <div class="oneStyle1">
+            英文大写：<div id="EnglishWords"></div>
+        </div>
+        <div style="text-align:center">
+            <input class="buttonStyle" id="fiveNumber" type="button" onclick="BigAmount()" value="转化为大写" title="转化为大写">
+        </div>
+    </div>
+    <script type="text/javascript">
+        var table = document.getElementById("table");
+        var width = document.documentElement.clientWidth;  //浏览器可见区域宽
+        var height = document.documentElement.clientHeight;  //浏览器可见区域高
+        table.style.marginLeft = ((width - 800) / 2) + "px";
+        table.style.marginTop = ((height - 700) / 2) + "px";
 
-            var res = "";
-            if (Dollars == "One") {
-                res = Dollars + " Dollar";
+        /***************************转化为中英文大写金额 start****************************/
+        function BigAmount() {
+            var cur = document.getElementById("currency").value;
+            var amo = document.getElementById("Amount").value
+            if (!cur) {
+                alert("请选择币种！");
+                return;
             }
-            else if (Dollars != "") {
-                res = Dollars + " Dollars";
+            if (!amo) {
+                alert("请输入金额！");
+                return;
             }
-            if (Cents != "" && Dollars != "") res += " AND"
-            if (Cents == "") {
-                res += " Only";
+            if (amo.indexOf(".") != -1) {
+                var a = amo.split(".")[0], b = amo.split(".")[1],
+                    c = transToEnglish1(a), d = "";
+                if (b.length > 2) {
+                    alert("请保留小数点后两位！如：3.14");
+                } else if (b == "00" || b == "0" || b == "") {
+                    d = "";
+                } else {
+                    d = " AND " + transToEnglish2(b);
+                }
+                document.getElementById("ChineseWords").innerHTML = allName(cur, 1) + " " + transToChinese(amo);
+                document.getElementById("EnglishWords").innerHTML = allName(cur, 0) + " " + c + d;
+            } else {
+                document.getElementById("ChineseWords").innerHTML = allName(cur, 1) + " " + transToChinese(amo);
+                document.getElementById("EnglishWords").innerHTML = allName(cur, 0) + " " + transToEnglish(amo);
             }
-            else if (Cents == "One") {
-                res += " One Cent";
+        };
+        //翻译成中文大写
+        function transToChinese(a) {
+            var b = 9.999999999999E10,
+                f = "零", h = "壹", g = "贰", e = "叁", k = "肆", p = "伍", q = "陆", r = "柒", s = "捌", t = "玖",
+                l = "拾", d = "佰", i = "仟", m = "万", j = "亿", o = "元", c = "角", n = "分", v = "整";
+
+            a = a.toString();
+            b = a.split(".");
+            if (b.length > 1) {
+                a = b[0];
+                b = b[1];
+                b = b.substr(0, 2)
+            } else {
+                a = b[0];
+                b = "";
             }
-            else {
-                res += " " + Cents + " Cents";
+            h = new Array(f, h, g, e, k, p, q, r, s, t);
+            l = new Array("", l, d, i);
+            m = new Array("", m, j);
+            n = new Array(c, n);
+            c = "";
+            if (Number(a) > 0) {
+                for (d = j = 0; d < a.length; d++) {
+                    e = a.length - d - 1;
+                    i = a.substr(d, 1);
+                    g = e / 4;
+                    e = e % 4;
+                    if (i == "0") {
+                        j++;
+                    } else {
+                        if (j > 0) { c += h[0]; }
+                        j = 0;
+                        c += h[Number(i)] + l[e];
+                    }
+                    if (e == 0 && j < 4) { c += m[g]; }
+                }
+                c += o;
             }
-            Id("divOutput").innerHTML = res;
-        }
-        //处理十位数
-        function funcConvertTens(v) {
-            var vLeft = parseInt(v.substring(0, 1));
-            var vRight = parseInt(v.substring(1));
-            var res = "";
-            if (vLeft == 1) {
-                switch (vRight) {
-                    case 0: res = "Ten"; break;
-                    case 1: res = "Eleven"; break;
-                    case 2: res = "Twelve"; break;
-                    case 3: res = "Thirteen"; break;
-                    case 4: res = "Fourteen"; break;
-                    case 5: res = "Fifteen"; break;
-                    case 6: res = "Sixteen"; break;
-                    case 7: res = "Seventeen"; break;
-                    case 8: res = "Eighteen"; break;
-                    case 9: res = "Nineteen"; break;
+            if (b != "") {
+                for (d = 0; d < b.length; d++) {
+                    i = b.substr(d, 1);
+                    if (i != "0") c += h[Number(i)] + n[d];
                 }
             }
-            else if (vLeft > 1) {
-                switch (vLeft) {
-                    case 2: res = "Twenty"; break;
-                    case 3: res = "Thirty"; break;
-                    case 4: res = "Forty"; break;
-                    case 5: res = "Fifty"; break;
-                    case 6: res = "Sixty"; break;
-                    case 7: res = "Seventy"; break;
-                    case 8: res = "Eighty"; break;
-                    case 9: res = "Ninety"; break;
+            if (c == "") { c = f + o; }
+            if (b.length < 2) { c += v; }
+            return c = c;
+        }
+        //翻译成英文大写
+        var arr1 = new Array("", " thousand", " million", " billion"),
+            arr2 = new Array("zero", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"),
+            arr3 = new Array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"),
+            arr4 = new Array("ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen");
+        function transToEnglish(a) {
+            var b = a.length, f, h = 0, g = "", e = Math.ceil(b / 3), k = b - e * 3; g = "";
+            for (f = k; f < b; f += 3) {
+                ++h;
+                num3 = f >= 0 ? a.substring(f, f + 3) : a.substring(0, k + 3);
+                strEng = toEnglish(num3);
+                if (strEng != "") {
+                    if (g != "") { g += ","; }
+                    g += toEnglish(num3) + arr1[e - h];
                 }
             }
-            if (vLeft == 0) {
-                res = funcConvertDigit(vRight);
-            }
-            else if (vLeft > 1 && vRight > 0) {
-                res += "-" + funcConvertDigit(vRight)
-            }
-            return res;
+            return g.toUpperCase();
         }
-        //处理个位数
-        function funcConvertDigit(v) {
-            var res = "";
-            switch (v) {
-                case 1: res = "One"; break;
-                case 2: res = "Tow"; break;
-                case 3: res = "Three"; break;
-                case 4: res = "Four"; break;
-                case 5: res = "Five"; break;
-                case 6: res = "Six"; break;
-                case 7: res = "Seven"; break;
-                case 8: res = "Eight"; break;
-                case 9: res = "Nine"; break;
-            }
-            return res;
-        }
-        //处理百位数
-        function funcConvertHundreds(v) {
-            var res = "";
-            var vVal = parseInt(v);
-            if (vVal == 0) return res;
-            v = "000" + v;
-            v = v.substring(v.length - 3)
-            vRight = parseInt(v.substr(2, 1));
-            vLeft = parseInt(v.substr(0, 1));
-            vMid = parseInt(v.substr(1, 1));
-            if (vLeft > 0) {
-                if (vMid + vRight > 0) {
-                    res = funcConvertDigit(vLeft) + " Hundred and ";
+        function transToEnglish1(a) {
+            var b = a.length, f, h = 0, g = "", e = Math.ceil(b / 3), k = b - e * 3; g = "";
+            for (f = k; f < b; f += 3) {
+                ++h;
+                num3 = f >= 0 ? a.substring(f, f + 3) : a.substring(0, k + 3);
+                strEng = toEnglish(num3);
+                if (strEng != "") {
+                    if (g != "") { g += ","; }
+                    g += toEnglish(num3) + arr1[e - h];
                 }
+            }
+            return g.toUpperCase();
+        }
+        function transToEnglish2(a) {
+            var b = a.length, f, h = 0, g = "", e = Math.ceil(b / 3), k = b - e * 3; g = "";
+            for (f = k; f < b; f += 3) {
+                ++h;
+                num3 = f >= 0 ? a.substring(f, f + 3) : a.substring(0, k + 3);
+                strEng = toEnglish(num3);
+                if (strEng != "") {
+                    if (g != "") g += ",";
+                    g += toEnglish(num3) + arr1[e - h];
+                }
+            }
+            return "CENTS " + g.toUpperCase();
+        }
+        function toEnglish(a) {
+            strRet = "";
+            if (a.length == 3 && a.substr(0, 3) != "000") {
+                if (a.substr(0, 1) != "0") {
+                    strRet += arr3[a.substr(0, 1)] + " hundred";
+                    if (a.substr(1, 2) != "00") strRet += " and ";
+                }
+                a = a.substring(1);
+            }
+            if (a.length == 2)
+                if (a.substr(0, 1) == "0") a = a.substring(1);
+                else if (a.substr(0, 1) == "1") strRet += arr4[a.substr(1, 2)];
                 else {
-                    res = funcConvertDigit(vLeft) + " Hundred ";
-                }
+                    strRet += arr2[a.substr(0, 1)];
+                    if (a.substr(1, 1) != "0") strRet += "-";
+                    a = a.substring(1);
+                } if (a.length == 1 && a.substr(0, 1) != "0") strRet += arr3[a.substr(0, 1)];
+            return strRet;
+        };
+        //各币种币别中英文全称
+        function allName(a, n) {
+            var name = "";
+            switch (a) {
+                case "CNY": name = n == "1" ? "人民币" : "Chinese Yuan"; break;
+                case "GBP": name = n == "1" ? "英镑" : "GreatBritain Pound"; break;
+                case "HKD": name = n == "1" ? "港币" : "HongKong Dollars"; break;
+                case "USD": name = n == "1" ? "美元" : "US Dollars"; break;
+                case "CHF": name = n == "1" ? "瑞士法郎" : "Schweizer Franken"; break;
+                case "SGD": name = n == "1" ? "新加坡元" : "Singapore Dollars"; break;
+                case "JPY": name = n == "1" ? "日元" : "Japanese Yen"; break;
+                case "CAD": name = n == "1" ? "加拿大元" : "Canadian Dollars"; break;
+                case "AUD": name = n == "1" ? "澳大利亚元" : "Australian Dollars"; break;
+                case "EUR": name = n == "1" ? "欧元" : "Euro"; break;
+                case "NZD": name = n == "1" ? "新西兰元" : "New Zealand Dollars"; break;
             }
-            if (vMid > 0) {
-                res += funcConvertTens(vMid + "" + vRight);
-            }
-            else {
-                res += funcConvertDigit(vRight);
-            }
-            return res;
+            return n == "1" ? name : name.toUpperCase();
         }
-        
-        function keyUp(e) {
-            var currKey = 0, e = e || event;
-            currKey = e.keyCode || e.which || e.charCode;
-            var keyName = String.fromCharCode(currKey);
-            // alert("按键码: " + currKey + " 字符: " + keyName);
-            funcMoney2Letters();
-        }
-        // document.onkeyup = keyUp;
-        function fanyi(){
-            funcMoney2Letters();
-        }
+        /***************************转化为中英文大写金额 end****************************/
     </script>
 </body>
 
