@@ -1,0 +1,28 @@
+用 navigator.userAgent 判断
+
+BrowserInfo = {      
+  isAndroid: Boolean(navigator.userAgent.match(/android/ig)), // 是否是Android浏览器   
+  isIphone: Boolean(navigator.userAgent.match(/iphone|ipod|iOS/ig)), // 是否是苹果浏览器
+  isIpad: Boolean(navigator.userAgent.match(/ipad/ig)), // 是否是 IPad 浏览器
+  isIpad: Boolean(navigator.userAgent.match(/Linux/ig)), // 是否是Linux平台浏览器
+  isWeixin: Boolean(navigator.userAgent.match(/MicroMessenger/ig)), // 是否是微信平台浏览器
+  isAli: Boolean(navigator.userAgent.match(/AlipayClient/ig)), // 是否是支付宝平台浏览器
+  isPhone: Boolean(/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) // 是否是手机端
+}
+
+------------------------------------------------------------------------------------------------------
+
+用 navigator.platform 判断
+
+if(/Win/i.test(navigator.platform)){
+  document.write("这是Windows操作系统平台");
+}
+if(/Mac/i.test(navigator.platform)){
+  document.write("这是Mac操作系统平台");
+}
+if(/Linux/i.test(navigator.platform)){
+  document.write("这是Linux操作系统平台（包括安卓系统）");
+}
+if(/iOS/i.test(navigator.platform)){
+  document.write("这是iOS操作系统平台");
+}
