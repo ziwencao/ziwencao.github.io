@@ -1,0 +1,42 @@
+方法：
+abort()：停止当前请求。
+getAllResponseHeaders()：把HTTP请求的所有响应首部作为键/值对返回。
+getResponseHeader("header")：返回指定首部的串值。
+open("method","url",[asyncFlag],["userName"],["password"])：建立对服务器的调用。method参数可以是get、post或put。url参数可以是相对url或绝对url。这个方法还包括3个可选的参数，是否异步，用户名，密码。
+send(content)：向服务器发送请求。
+setRequestHeader("header","value")：把指定首部设置为所提供的值。在设置任何首部之前必须先调用open()。设置header并和请求一起发送（"post"方法一定要）。
+
+get请求：
+--------------------------------------------------------------
+//步骤1：创建异步对象
+var ajax = new XMLHttpRequest();
+//步骤2：设置请求的url参数，参数一是请求的类型，参数二是请求的url，可以带参数，动态的传递参数starName到服务端
+ajax.open("get","getStar.php?starName=" + name);
+//步骤3：发送请求
+ajax.send();
+//步骤4：注册事件 onreadystatechange  状态改变就会调用
+ajax.onreadystatechange = function(){
+    if(ajax.readyStatus == 4 && ajax.status == 200){
+        //步骤5：如果能够进入到这个判断，说明数据完美的返回回来了，并且请求的页面是存在的
+        console.log(ajax.responseText);
+    }
+}
+
+*************************************************************************************************************
+
+post请求：
+--------------------------------------------------------------
+//创建异步对象
+var xhr = new XMLHttpRequest();
+//这种请求的类型及url
+//post请求一定要添加请求头才行，不然会报错
+xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+xhr.open("post","02.post.php");
+//发送请求
+xhr.send();
+xhr.onreadystatechange = function(){
+    //这步为判断服务器是否正确响应
+    if(xhr.readyState == 4 && xhr.status == 200){
+        console.log(xhr.responseText);
+    }
+};
